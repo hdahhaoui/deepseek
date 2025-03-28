@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs, unquote
+from urllib.parse import unquote  # Ajouter aux autres imports
 import re
 
 # Configuration du scraping
@@ -17,7 +18,7 @@ def parse_power_value(val_str: str):
         'kw': 1000,
         'btu': 0.29307107
     }
-    match = re.search(r'(\d+[\d.,]*)\s*(w|kw|btu)/?h?', val_str, re.IGNORECASE)
+   match = re.search(r'(\d+[\d.,]*)\s*(w|kw|btu)/?h?', val_str, re.IGNORECASE)
     if not match:
         return None
     
@@ -84,7 +85,10 @@ def fetch_product_specs(model: str):
         
         # Téléchargement et analyse du premier PDF trouvé
         if pdf_links:
-            pdf_url = parse_qs(urlparse(pdf_links[0]).get('q', [pdf_links[0]])[0]
+            # Correction de l'extraction d'URL
+            parsed = urlparse(pdf_links[0])
+            pdf_url = parse_qs(parsed.query).get('q', [unquote(pdf_links[0])])[0]
+            
             pdf_response = requests.get(pdf_url, headers=HEADERS, timeout=15)
             
             # Extraction de texte depuis le PDF
